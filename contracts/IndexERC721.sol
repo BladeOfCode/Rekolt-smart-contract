@@ -15,6 +15,8 @@ contract IndexERC721 is ERC721, ERC721Holder {
 
     event Deposit(address indexed token, uint256 tokenId, address indexed from);
 
+    event DepositBatch(address[] indexed tokens, uint256[] indexed tokenIds, address indexed from);
+
     event Withdraw(address indexed token, uint256 tokenId, address indexed to);
 
     event WithdrawETH(address indexed who);
@@ -33,6 +35,24 @@ contract IndexERC721 is ERC721, ERC721Holder {
         IERC721(_token).safeTransferFrom(msg.sender, address(this), _tokenId);
 
         emit Deposit(_token, _tokenId, msg.sender);
+    }
+
+    /// @notice deposit an ERC721 token from another contract into an ERC721 in this contract
+    /// @param _tokens the array of addresses of the NFTs you are depositing
+    /// @param _tokenIds the array of IDs of the NFTs you are depositing
+    function depositBatchERC721(address[] memory _tokens, uint256[] memory _tokenIds) external {
+        require(_tokens.length == _tokenIds.length, "tokens and tokenIds length mismatch");
+        uint256 length = _tokens.length;
+        address _token;
+        uint256 _tokenId;
+
+        for (uint256 i = 0; i<length; ++i) {
+            _token = _tokens[i];
+            _tokenId = _tokenIds[i];
+            IERC721(_token).safeTransferFrom(msg.sender, address(this), _tokenId);
+        }
+
+        emit DepositBatch(_tokens, _tokenIds, msg.sender);
     }
 
     /// @notice withdraw an ERC721 token from this contract into your wallet
